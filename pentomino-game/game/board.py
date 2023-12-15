@@ -1,8 +1,8 @@
 import numpy as np
 import cv2
-import pentominos as pentominos
+import pentominos
 import pentomino_cv as pcv
-import pandas as pd
+import pandas as pd 
 from threading import Thread, Lock
 import os
 # import pygame
@@ -14,9 +14,10 @@ class VideoStream:
 
     def __init__(self, src=0, width=1920, height=1080):
 
-        # ip = 'http://172.24.191.212:4747/'
+        ip = 'http://172.24.182.68:4747/'
         # cam_source = f'{ip}video?{width}x{height}'
-        self.stream = cv2.VideoCapture(src)
+        self.stream = cv2.VideoCapture(ip) 
+        'make a copy of the file and start killing videstream functions'
         self.stream.set(cv2.CAP_PROP_FRAME_WIDTH, width)
         self.stream.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
         self.started = False
@@ -25,7 +26,7 @@ class VideoStream:
         # directory = os.getcwd()
 
         # print(directory)
-        df_raw = pd.read_csv('solutions-126.csv', header=None)
+        df_raw = pd.read_csv('/Users/manuelestevez/Documents/Python_Scripts/pentomino-game/game/solutions-126.csv', header=None)
         self.df = df_raw.iloc[:,1:]
         self.board = BOARD()
         self.detector = pcv.PentominoDetector()
@@ -38,6 +39,7 @@ class VideoStream:
             self.started = True
             self.thread = Thread(target=self.update, args=())
             self.thread.start()
+            self.update()
         return self
 
     def update(self):
@@ -66,6 +68,26 @@ class VideoStream:
                 self.started = False
                 cv2.destroyAllWindows()
             self.get_status()
+
+    def get_pentominos(self):
+        image = self.detector.transform_image(self.frame.copy())
+
+        if image is None:
+                # if not pygame.mixer.music.get_busy():
+                #         pygame.mixer.init()
+                #         pygame.mixer.music.load("corners.mp3")
+                #         pygame.mixer.music.play()
+            return None
+        transformed_image = image.copy()
+        pent = self.detector.find_pentominos(image)
+        [ids, coords, orientations] = pent
+
+        #exchanges ids for characters
+        ids = [[list(pentominos.pentomino_names)[id], pentominos.PENTOMINOS_SHAPE[id]] for id in ids]
+
+        pent = [ids, coords, orientations]
+
+        return pent
 
     def get_status(self):
 
@@ -201,7 +223,7 @@ class VideoStream:
             self.thread.join()
 
 class BOARD:
-
+    
     def __init__(self):
 
         self.colors = [(150,255,255),
@@ -218,6 +240,8 @@ class BOARD:
                   (0,200,200)]
 
         self.border = 1
+        
+        'define cv2_gui'
         self.cv2_gui = np.full(shape=(600,1000,3), fill_value=0, dtype=np.uint8)
 
 

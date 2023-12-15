@@ -11,7 +11,8 @@ class PentominoDetector:
         self.detector = aruco.ArucoDetector(dictionary, parameters)
         # Create a sharpening kernel
         self.kernel = np.array([[-1, -1, -1], [-1,  9, -1], [-1, -1, -1]])
-
+    
+    #np.array --> (id_list, center_coords, orientation)
     def find_aruco_markers(self, img):
 
         # Apply the kernel to the image
